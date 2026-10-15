@@ -1,0 +1,50 @@
+---
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/inter';
+import '../styles/global.css';
+import { SITE } from '../config';
+import { LANGS, t, localizePath } from '../i18n/utils';
+---
+
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>404 — {SITE.name}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <main class="container not-found">
+      {
+        LANGS.map((lang) => (
+          <section lang={lang}>
+            <p class="eyebrow">404</p>
+            <h1>{t(lang, 'notFound.title')}</h1>
+            <p class="lead">{t(lang, 'notFound.body')}</p>
+            <a class="btn btn-primary" href={localizePath(lang, '/')}>
+              {t(lang, 'notFound.home')}
+            </a>
+          </section>
+        ))
+      }
+    </main>
+  </body>
+</html>
+
+<style>
+  .not-found {
+    display: grid;
+    gap: var(--space-xl);
+    padding-block: var(--space-xl);
+  }
+  section {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
+  }
+  h1 {
+    font-size: var(--step-3);
+  }
+</style>

@@ -1,0 +1,80 @@
+---
+import { SITE } from '../config';
+import { type Lang, t, localizePath } from '../i18n/utils';
+import LangSwitch from './LangSwitch.astro';
+
+interface Props {
+  lang: Lang;
+  path: string;
+}
+
+const { lang, path } = Astro.props;
+const home = localizePath(lang, '/');
+---
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="identity" href={home}>
+      <span class="name">{SITE.name}</span>
+      {SITE.brand && <span class="brand">{SITE.brand}</span>}
+    </a>
+    <nav aria-label={t(lang, 'nav.label')}>
+      <ul>
+        <li class="optional"><a href={`${home}#experience`}>{t(lang, 'nav.experience')}</a></li>
+        <li class="optional"><a href={`${home}#work`}>{t(lang, 'nav.work')}</a></li>
+        <li class="optional"><a href={`${home}#freelance`}>{t(lang, 'nav.freelance')}</a></li>
+        <li><a href={`${home}#contact`}>{t(lang, 'nav.contact')}</a></li>
+        <li><LangSwitch lang={lang} path={path} /></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--line);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-s);
+    padding-block: var(--space-s);
+  }
+  .identity {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    text-decoration: none;
+  }
+  .name {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    font-weight: 600;
+  }
+  .brand {
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  ul {
+    display: flex;
+    align-items: center;
+    gap: var(--space-m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--step--1);
+    font-weight: 500;
+  }
+  nav a {
+    text-decoration: none;
+  }
+  @media (max-width: 40rem) {
+    .optional,
+    .brand {
+      display: none;
+    }
+  }
+</style>

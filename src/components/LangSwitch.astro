@@ -1,0 +1,36 @@
+---
+import { type Lang, t, otherLang, localizePath } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  path: string;
+}
+
+const { lang, path } = Astro.props;
+const target = otherLang(lang);
+---
+
+<a
+  class="lang-switch"
+  data-lang-switch
+  href={localizePath(target, path)}
+  hreflang={target}
+  lang={target}
+  aria-label={t(lang, 'lang.switchLabel')}
+>
+  {t(lang, 'lang.switch')}
+</a>
+
+<style>
+  .lang-switch {
+    display: inline-block;
+    padding: 0.2em 0.6em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .lang-switch:hover {
+    border-color: var(--accent);
+  }
+</style>

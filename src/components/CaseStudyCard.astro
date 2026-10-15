@@ -1,0 +1,60 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import { type Lang, t, localizePath } from '../i18n/utils';
+import { splitId } from '../lib/project-helpers';
+
+interface Props {
+  lang: Lang;
+  project: CollectionEntry<'projects'>;
+}
+
+const { lang, project } = Astro.props;
+const { slug } = splitId(project.id);
+const href = localizePath(lang, `/progetti/${slug}/`);
+const { title, summary, stack, cover } = project.data;
+---
+
+<article class="card">
+  <a class="cover-link" href={href} tabindex="-1" aria-hidden="true">
+    <Image src={cover} alt="" widths={[480, 960]} sizes="(min-width: 48rem) 34rem, 100vw" />
+  </a>
+  <h3><a href={href}>{title}</a></h3>
+  <p>{summary}</p>
+  <ul class="tags" aria-label={t(lang, 'caseStudy.stack')}>
+    {stack.map((item) => <li>{item}</li>)}
+  </ul>
+</article>
+
+<style>
+  .card {
+    display: grid;
+    gap: var(--space-s);
+    align-content: start;
+  }
+  .cover-link {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .cover-link :global(img) {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .card:hover .cover-link :global(img) {
+    transform: scale(1.02);
+  }
+  h3 {
+    font-size: var(--step-1);
+  }
+  h3 a {
+    text-decoration: none;
+  }
+  p {
+    color: var(--muted);
+  }
+</style>

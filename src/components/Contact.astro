@@ -1,0 +1,48 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import ProfileLinks from './ProfileLinks.astro';
+import { SITE } from '../config';
+import { type Lang, t } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<section class="section" id="contact" aria-labelledby="contact-title">
+  <div class="container">
+    <SectionHeading id="contact-title" label={t(lang, 'contact.label')} title={t(lang, 'contact.title')} />
+    <p class="lead">{t(lang, 'contact.lead')}</p>
+    <div class="actions">
+      <a class="btn btn-primary" href={`mailto:${SITE.email}`}>{t(lang, 'contact.email')}</a>
+      {
+        SITE.links.booking && (
+          <a class="btn btn-ghost" href={SITE.links.booking} rel="noopener">
+            {t(lang, 'contact.booking')}
+          </a>
+        )
+      }
+    </div>
+    <p class="email"><a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+    <div class="profiles">
+      <ProfileLinks lang={lang} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .actions {
+    margin-top: var(--space-l);
+  }
+  .email {
+    margin-top: var(--space-m);
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+  }
+  .profiles {
+    margin-top: var(--space-s);
+    color: var(--muted);
+  }
+</style>

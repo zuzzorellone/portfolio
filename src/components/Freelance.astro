@@ -1,0 +1,61 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import { type Lang, t } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const items = ([1, 2, 3] as const).map((n) => ({
+  title: t(lang, `freelance.${n}.title` as const),
+  body: t(lang, `freelance.${n}.body` as const),
+}));
+---
+
+<section class="section" id="freelance" aria-labelledby="freelance-title">
+  <div class="container">
+    <SectionHeading id="freelance-title" label={t(lang, 'freelance.label')} title={t(lang, 'freelance.title')} />
+    <p class="lead">{t(lang, 'freelance.lead')}</p>
+    <ul class="grid">
+      {
+        items.map((item) => (
+          <li>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="process">{t(lang, 'freelance.process')}</p>
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--space-m);
+    margin: var(--space-l) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: grid;
+    align-content: start;
+    gap: var(--space-xs);
+    padding-top: var(--space-s);
+    border-top: 1px solid var(--line);
+  }
+  h3 {
+    font-size: var(--step-1);
+  }
+  li p,
+  .process {
+    color: var(--muted);
+  }
+  .process {
+    margin-top: var(--space-l);
+    font-size: var(--step--1);
+  }
+</style>

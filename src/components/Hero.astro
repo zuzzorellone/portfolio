@@ -1,0 +1,119 @@
+---
+import ProfileLinks from './ProfileLinks.astro';
+import { type Lang, t } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const facts = ([1, 2, 3] as const).map((n) => ({
+  value: t(lang, `hero.fact.${n}.value` as const),
+  label: t(lang, `hero.fact.${n}.label` as const),
+}));
+---
+
+<section class="hero">
+  <div class="container layout">
+    <div class="intro">
+      <p class="eyebrow">{t(lang, 'hero.eyebrow')}</p>
+      <h1>{t(lang, 'hero.title')} <em>{t(lang, 'hero.titleAccent')}</em></h1>
+      <p class="lead">{t(lang, 'hero.lead')}</p>
+      <p class="status"><span class="dot" aria-hidden="true"></span>{t(lang, 'hero.status')}</p>
+      <div class="actions">
+        <a class="btn btn-primary" href={`/cv/cv-${lang}.pdf`} download>{t(lang, 'hero.ctaPrimary')}</a>
+        <a class="btn btn-ghost" href="#contact">{t(lang, 'hero.ctaContact')}</a>
+      </div>
+      <div class="profiles">
+        <ProfileLinks lang={lang} />
+      </div>
+    </div>
+    <dl class="facts" aria-label={t(lang, 'hero.factsLabel')}>
+      {
+        facts.map((fact) => (
+          <div>
+            <dt>{fact.value}</dt>
+            <dd>{fact.label}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding-block: var(--space-xl);
+  }
+  .layout {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+  @media (min-width: 48rem) {
+    .layout {
+      grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 1fr);
+      gap: var(--space-xl);
+    }
+  }
+  h1 {
+    max-width: 20ch;
+    margin-block: var(--space-s) var(--space-m);
+    font-size: var(--step-3);
+  }
+  h1 em {
+    color: var(--accent);
+    font-style: italic;
+  }
+  .status {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    margin-top: var(--space-m);
+    font-size: var(--step--1);
+    font-weight: 500;
+  }
+  .dot {
+    flex: none;
+    width: 0.6em;
+    height: 0.6em;
+    border-radius: 50%;
+    background: #2f855a;
+  }
+  .actions {
+    margin-top: var(--space-l);
+  }
+  .profiles {
+    margin-top: var(--space-m);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+  /* "dt" contiene il valore (6+, stack…), "dd" la spiegazione */
+  .facts {
+    display: grid;
+    margin: 0;
+    padding: var(--space-xs) var(--space-m);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .facts div {
+    display: grid;
+    gap: 0.15rem;
+    padding-block: var(--space-m);
+  }
+  .facts div + div {
+    border-top: 1px solid var(--line);
+  }
+  dt {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.1;
+    color: var(--accent);
+  }
+  dd {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+</style>

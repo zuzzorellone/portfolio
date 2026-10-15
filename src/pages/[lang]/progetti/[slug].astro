@@ -1,0 +1,22 @@
+---
+import { getCollection, render } from 'astro:content';
+import CaseStudy from '../../../layouts/CaseStudy.astro';
+import { assertParity, splitId } from '../../../lib/project-helpers';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('projects');
+  assertParity(entries.map((entry) => entry.id));
+  return entries.map((entry) => {
+    const { lang, slug } = splitId(entry.id);
+    return { params: { lang, slug }, props: { entry } };
+  });
+}
+
+const { entry } = Astro.props;
+const { lang, slug } = splitId(entry.id);
+const { Content } = await render(entry);
+---
+
+<CaseStudy lang={lang} slug={slug} data={entry.data}>
+  <Content />
+</CaseStudy>

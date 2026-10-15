@@ -1,0 +1,56 @@
+---
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/inter';
+import '../styles/global.css';
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../config';
+import { type Lang, LANGS, DEFAULT_LANG, t, localizePath } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  /** Percorso senza lingua, con slash iniziale e finale: "/" o "/progetti/x/" */
+  path: string;
+  title: string;
+  description: string;
+  ogImage?: ImageMetadata;
+}
+
+const { lang, path, title, description, ogImage } = Astro.props;
+const absolute = (p: string) => new URL(p, SITE.url).href;
+const canonical = absolute(localizePath(lang, path));
+const ogSrc = ogImage ? (await getImage({ src: ogImage, width: 1200, format: 'jpg' })).src : '/og.png';
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {LANGS.map((l) => <link rel="alternate" hreflang={l} href={absolute(localizePath(l, path))} />)}
+    <link rel="alternate" hreflang="x-default" href={absolute(localizePath(DEFAULT_LANG, path))} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={absolute(ogSrc)} />
+    <meta property="og:locale" content={t(lang, 'meta.ogLocale')} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#faf8f5" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{t(lang, 'a11y.skip')}</a>
+    <Header lang={lang} path={path} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+  </body>
+</html>

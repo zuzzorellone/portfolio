@@ -1,0 +1,39 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import CaseStudyCard from './CaseStudyCard.astro';
+import { getProjects } from '../lib/projects';
+import { type Lang, t } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const projects = await getProjects(lang);
+---
+
+<section class="section" id="work" aria-labelledby="work-title">
+  <div class="container">
+    <SectionHeading id="work-title" label={t(lang, 'work.label')} title={t(lang, 'work.title')} />
+    <ul class="grid">
+      {
+        projects.map((project) => (
+          <li>
+            <CaseStudyCard lang={lang} project={project} />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: var(--space-l);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

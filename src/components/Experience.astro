@@ -1,0 +1,134 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import { STACK } from '../config';
+import { type Lang, t } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const groups = [
+  { title: t(lang, 'experience.stack.work'), items: STACK.work },
+  { title: t(lang, 'experience.stack.personal'), items: STACK.personal },
+];
+const entries = [
+  {
+    period: t(lang, 'experience.job.period'),
+    title: t(lang, 'experience.job.role'),
+    detail: t(lang, 'experience.job.company'),
+    duties: ([1, 2, 3, 4] as const).map((n) => t(lang, `experience.job.duty.${n}` as const)),
+  },
+  {
+    period: t(lang, 'experience.edu.period'),
+    title: t(lang, 'experience.edu.title'),
+    detail: t(lang, 'experience.edu.detail'),
+    duties: [],
+  },
+];
+---
+
+<section class="section" id="experience" aria-labelledby="experience-title">
+  <div class="container">
+    <SectionHeading id="experience-title" label={t(lang, 'experience.label')} title={t(lang, 'experience.title')} />
+    <div class="layout">
+      <div>
+        <p class="lead">{t(lang, 'experience.lead')}</p>
+        <dl class="entries">
+          {
+            entries.map((entry) => (
+              <div>
+                <dt>{entry.period}</dt>
+                <dd>
+                  <strong>{entry.title}</strong>
+                  <span>{entry.detail}</span>
+                  {entry.duties.length > 0 && (
+                    <ul class="duties">
+                      {entry.duties.map((duty) => (
+                        <li>{duty}</li>
+                      ))}
+                    </ul>
+                  )}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+        <a class="btn btn-ghost" href={`/cv/cv-${lang}.pdf`} download>{t(lang, 'experience.cv')}</a>
+      </div>
+      <div class="stack">
+        {
+          groups.map((group) => (
+            <div>
+              <h3>{group.title}</h3>
+              <ul class="tags">
+                {group.items.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+    gap: var(--space-l);
+  }
+  .entries {
+    display: grid;
+    gap: var(--space-s);
+    margin: var(--space-m) 0;
+  }
+  .entries > div {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: var(--space-s);
+    padding-top: var(--space-s);
+    border-top: 1px solid var(--line);
+  }
+  @media (max-width: 30rem) {
+    .entries > div {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+  }
+  dt {
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+  dd {
+    display: grid;
+    margin: 0;
+  }
+  dd span {
+    color: var(--muted);
+  }
+  .duties {
+    margin: var(--space-xs) 0 0;
+    padding-left: 1.1em;
+    color: var(--muted);
+  }
+  .duties li::marker {
+    color: var(--accent);
+  }
+  .stack {
+    display: grid;
+    align-content: start;
+    gap: var(--space-m);
+  }
+  .stack h3 {
+    margin-bottom: var(--space-xs);
+    font-family: var(--font-body);
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+</style>
