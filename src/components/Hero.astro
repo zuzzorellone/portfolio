@@ -43,7 +43,25 @@ const facts = ([1, 2, 3] as const).map((n) => ({
 
 <style>
   .hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     padding-block: var(--space-xl);
+  }
+  /* Cinghiale grande in rilievo, in alto a destra; su mobile non c'è spazio libero e non compare */
+  @media (min-width: 48rem) {
+    .hero::before {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      top: -2rem;
+      right: max(-2rem, calc((100vw - var(--container)) / 2 - 6rem));
+      width: 22rem;
+      aspect-ratio: 1;
+      rotate: -12deg;
+      background: url('/bg-boar.svg') center / contain no-repeat;
+      pointer-events: none;
+    }
   }
   .layout {
     display: grid;
@@ -78,7 +96,7 @@ const facts = ([1, 2, 3] as const).map((n) => ({
     width: 0.6em;
     height: 0.6em;
     border-radius: 50%;
-    background: #2f855a;
+    background: var(--accent);
   }
   .actions {
     margin-top: var(--space-l);
@@ -94,6 +112,7 @@ const facts = ([1, 2, 3] as const).map((n) => ({
     margin: 0;
     padding: var(--space-xs) var(--space-m);
     border: 1px solid var(--line);
+    border-top: 3px solid var(--accent-2);
     border-radius: var(--radius);
     background: var(--surface);
   }

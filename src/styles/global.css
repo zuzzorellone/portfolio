@@ -1,10 +1,13 @@
 :root {
-  --bg: #faf8f5;
+  --bg: #fef8eb;
   --surface: #ffffff;
   --text: #1a1a1a;
   --muted: #5c5a57;
-  --line: #e6e1da;
-  --accent: #590f78;
+  --line: #ebdfc8;
+  --accent: #1a5536;
+  /* Arancio del logo: solo decorativo, non regge il testo (contrasto 3.3:1) */
+  --accent-2: #cb741c;
+  --dot: #e2d5bb;
   --accent-ink: #ffffff;
 
   --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
@@ -51,7 +54,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--bg) radial-gradient(circle, var(--dot) 1px, transparent 1.4px) 0 0 / 22px 22px;
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--step-0);
@@ -95,6 +98,11 @@ a {
 
 a:hover {
   color: var(--accent);
+  text-decoration-color: var(--accent-2);
+}
+
+::selection {
+  background: #f6dcbc;
 }
 
 :focus-visible {
@@ -119,6 +127,17 @@ a:hover {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+/* Trattino arancio davanti alle etichette */
+.eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 1.5rem;
+  height: 2px;
+  margin-right: 0.6rem;
+  vertical-align: middle;
+  background: var(--accent-2);
 }
 
 .lead {
@@ -192,3 +211,4 @@ a:hover {
   background: var(--text);
   color: var(--bg);
 }
+
