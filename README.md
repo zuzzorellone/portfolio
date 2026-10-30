@@ -17,11 +17,11 @@ It is written for two audiences. Recruiters get verifiable facts first (role, ex
   - pages missing in one of the two languages
   - missing or wrong SEO / localization metadata
   - empty links and inline scripts
-- **Reproducible deploy.** A multi-stage Docker image runs tests and the build, then serves the result with nginx (read-only container, security headers). If a check fails, no image is produced and the live site stays as it is.
+- **Reproducible deploy.** Every push to `master` goes live through GitHub Actions. A multi-stage Docker image runs tests and the build, then serves the result with nginx (read-only container, security headers). If a check fails, no image is produced and the live site stays as it is.
 
 ## Tech stack
 
-Astro · TypeScript · Content Collections · Vitest · sharp · Docker · nginx · Let's Encrypt
+Astro · TypeScript · Content Collections · Vitest · sharp · Docker · nginx · GitHub Actions
 
 ## Getting started
 
@@ -53,7 +53,7 @@ src/
   styles/global.css   Design tokens and global styles
 scripts/              Build-time output checks and image generation
 tests/                Unit tests
-deploy/               nginx config, host reverse-proxy example, smoke test
+deploy/               Production compose file, nginx config, smoke test
 ```
 
 ### Adding a case study
@@ -80,14 +80,15 @@ The schema is validated at build time, and the output checks fail if one of the 
 
 ## Deployment
 
-The site runs as a Docker container bound to `127.0.0.1`, behind the host's nginx, which handles HTTPS:
+Every push to `master` deploys the site with GitHub Actions ([`deploy.yml`](.github/workflows/deploy.yml)):
 
-```bash
-docker compose up -d --build
-deploy/smoke-test.sh
-```
+1. Build an ARM image for the Oracle Cloud server. The Dockerfile runs the tests, the build and the output checks, so a failing check means no image and no deploy.
+2. Push it to GitHub Container Registry, tagged `latest` and with the commit SHA.
+3. Over SSH, pull the new image on the server, restart the container and wait until its health check passes.
 
-See [`deploy/README.md`](deploy/README.md) for the full setup (in Italian).
+On the server the container exposes no ports: Nginx Proxy Manager reaches it over a shared Docker network and handles HTTPS.
+
+See [`deploy/README.md`](deploy/README.md) for the one-time setup and rollbacks (in Italian).
 
 ## License
 

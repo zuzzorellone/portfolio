@@ -1,0 +1,28 @@
+# Il portfolio in produzione, sul server Oracle dietro Nginx Proxy Manager.
+# Il workflow di deploy (.github/workflows/deploy.yml) copia questo file sul server e lo avvia con
+# l'immagine appena costruita; PORTFOLIO_IMAGE in .env indica quella da usare a mano.
+services:
+  portfolio:
+    image: ${PORTFOLIO_IMAGE:?imposta PORTFOLIO_IMAGE in .env}
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /run
+      - /tmp
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    # Nessuna porta sull'host: Nginx Proxy Manager lo raggiunge sulla sua rete come
+    # http://portfolio:80, come gli altri servizi del server.
+    networks:
+      proxy:
+        aliases: [portfolio]
+
+networks:
+  # La rete del proxy, creata dal setup di Nginx Proxy Manager.
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-nginx_net}

@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
-FROM node:24-alpine AS build
+# Il build produce solo file statici: gira sull'architettura di chi costruisce (niente emulazione
+# quando la CI crea l'immagine ARM), e solo nginx finale è dell'architettura di destinazione.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci

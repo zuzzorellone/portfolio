@@ -1,0 +1,111 @@
+# Messa online: un push su `master` costruisce l'immagine ARM per il server Oracle (il Dockerfile
+# esegue test, build e check-dist: se qualcosa fallisce l'immagine non nasce e il sito resta com'è),
+# la pubblica nel registro del repo (GHCR) e la avvia sul server via SSH.
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Un deploy alla volta; un push più recente aspetta quello in corso invece di interromperlo.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.name.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image name
+        id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+      # QEMU serve solo per lo stadio nginx finale: lo stadio Node gira nativo (vedi Dockerfile).
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ steps.name.outputs.image }}:latest
+            ${{ steps.name.outputs.image }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+    env:
+      IMAGE: ${{ needs.build.outputs.image }}:${{ github.sha }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || 'portfolio' }}
+    steps:
+      - uses: actions/checkout@v4
+      # La chiave viene verificata prima dell'uso: un .pub incollato o una chiave troncata lo dicono
+      # chiaramente, e l'impronta (non segreta) si confronta con `ssh-keygen -lf <chiave>.pub`.
+      - name: SSH key
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER_NAME: ${{ secrets.DEPLOY_USER }}
+          PORT: ${{ vars.DEPLOY_PORT || '22' }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          if ! ssh-keygen -y -f ~/.ssh/id_deploy > /dev/null; then
+            echo "::error::DEPLOY_SSH_KEY non è una chiave privata valida: incolla tutto il file della chiave (non il .pub), dalla riga -----BEGIN alla riga -----END comprese."
+            exit 1
+          fi
+          echo "Impronta della chiave usata:"
+          ssh-keygen -lf ~/.ssh/id_deploy
+          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          printf 'Host server\n  HostName %s\n  User %s\n  Port %s\n  IdentityFile ~/.ssh/id_deploy\n  IdentitiesOnly yes\n' \
+            "$HOST" "$USER_NAME" "$PORT" > ~/.ssh/config
+      - name: Copy the compose file
+        run: |
+          ssh server "mkdir -p '$DEPLOY_PATH'"
+          scp deploy/docker-compose.yml "server:$DEPLOY_PATH/docker-compose.yml"
+      # Il token temporaneo del job autentica il server per scaricare l'immagine privata, e il
+      # logout arriva subito dopo: sul server non resta nessuna credenziale GitHub.
+      - name: Start the new version
+        run: |
+          ssh server bash -s <<SCRIPT
+          set -euo pipefail
+          cd '$DEPLOY_PATH'
+          echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+          export PORTFOLIO_IMAGE='$IMAGE'
+          docker compose pull portfolio
+          docker logout ghcr.io
+          docker compose up -d --remove-orphans
+          echo "PORTFOLIO_IMAGE=$IMAGE" > .env
+          docker image prune -f
+          SCRIPT
+      # L'healthcheck dell'immagine (GET /it/) dice quando la nuova versione è pronta.
+      - name: Wait until it answers
+        run: |
+          for _ in $(seq 1 30); do
+            status=$(ssh server "cd '$DEPLOY_PATH' && docker inspect -f '{{.State.Health.Status}}' \$(docker compose ps -q portfolio)" || true)
+            echo "Stato: $status"
+            if [ "$status" = "healthy" ]; then exit 0; fi
+            sleep 5
+          done
+          ssh server "cd '$DEPLOY_PATH' && docker compose logs --tail 80 portfolio"
+          exit 1
