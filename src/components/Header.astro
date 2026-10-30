@@ -15,6 +15,7 @@ const home = localizePath(lang, '/');
 <header class="site-header">
   <div class="container bar">
     <a class="identity" href={home}>
+      <span class="mark" aria-hidden="true"></span>
       <span class="name">{SITE.name}</span>
       {SITE.brand && <span class="brand">{SITE.brand}</span>}
     </a>
@@ -46,6 +47,21 @@ const home = localizePath(lang, '/');
     align-items: baseline;
     gap: 0.6em;
     text-decoration: none;
+  }
+  /* Cinghiale solo su mobile, dove quello grande della Hero non compare (stesso breakpoint).
+     Come sfondo e non <img>: su desktop il file non viene nemmeno scaricato. */
+  .mark {
+    display: none;
+  }
+  @media (max-width: 47.99rem) {
+    .mark {
+      display: block;
+      flex-shrink: 0;
+      align-self: center;
+      width: 2rem;
+      height: 2rem;
+      background: url('/boar-mark.svg') center / contain no-repeat;
+    }
   }
   .name {
     font-family: var(--font-display);
