@@ -58,8 +58,8 @@ const home = localizePath(lang, '/');
       display: block;
       flex-shrink: 0;
       align-self: center;
-      width: 2rem;
-      height: 2rem;
+      width: 1.6rem;
+      height: 1.6rem;
       background: url('/boar-mark.svg') center / contain no-repeat;
     }
   }
@@ -67,6 +67,7 @@ const home = localizePath(lang, '/');
     font-family: var(--font-display);
     font-size: var(--step-1);
     font-weight: 600;
+    white-space: nowrap;
   }
   .brand {
     font-size: var(--step--1);
@@ -91,6 +92,21 @@ const home = localizePath(lang, '/');
     .optional,
     .brand {
       display: none;
+    }
+  }
+  /* Telefoni stretti: spazi più corti e nome più piccolo, così nome e cognome restano su una riga */
+  @media (max-width: 24rem) {
+    .bar {
+      gap: var(--space-xs);
+    }
+    .identity {
+      gap: 0.4em;
+    }
+    .name {
+      font-size: 1rem;
+    }
+    ul {
+      gap: 0.75rem;
     }
   }
 </style>
